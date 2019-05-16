@@ -1,0 +1,19 @@
+extends layout
+
+block content
+  h1#score 0
+  button#trackbutton Cambiar Video
+  div#updatenote Cargando Modelo
+  video#myvideo(autoplay="autoplay" class="canvasbox")
+  canvas#canvas(class="border canvasbox")
+  canvas#gameCanvasOver(class="over")
+  canvas#gameCanvas(class="under")
+  script(src="/javascripts/libs/preloadjs-0.6.0.min.js")
+  script(src="/javascripts/libs/spp.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js")
+  script(src="/javascripts/fruit_ninja.js")
+  script(src="/javascripts/Assets_Loader.js")
+  script(src="/javascripts/Module_blade.js")
+  script(src="/javascripts/bundle.js")
+  script(src="/javascripts/camera_track.js")
+

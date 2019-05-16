@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    height: 100vh;
+}
+
+/* put "over" on top of "under" */
+
+/* TODO */
+
+.over {
+    position: absolute;
+    left: 0px;
+    top: 20px;
+    z-index: 0;
+}
+
+.under {
+    position: absolute;
+    left: 0px;
+    top: 20px;
+    z-index: -1;
+}
+
+canvas {
+    border: 1px solid black;
+    display: block;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+}
+
+h1 {
+    position: absolute;
+    top: 2em;
+    left: 2em;
+    font-family: 'Montserrat';
+    font-size: 2em;
+    text-transform: uppercase;
+    width: auto;
+    line-height: .8em;
+    border: 5px solid black;
+    padding: .2em;
+}
+
+h1 {
+    position: absolute;
+    top: 2em;
+    left: 2em;
+    font-family: 'Montserrat';
+    font-size: 2em;
+    text-transform: uppercase;
+    width: auto;
+    line-height: .8em;
+    border: 5px solid black;
+    padding: .2em;
+}
+
+/*** HAND TRACK JS ***/
+
+.canvasbox {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    border-radius: 3px;
+    margin-right: 10px;
+    width: 215px;
+    height: 162px;
+    border-bottom: 3px solid #0063FF;
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.2), 0 4px 10px 0 #00000030;
+
+}
+
+.border {
+    border: 2px solid #fff;
+}
