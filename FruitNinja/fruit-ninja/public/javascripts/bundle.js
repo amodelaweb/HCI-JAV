@@ -1,4 +1,309 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const THREE = require('three')
+
+function loadAssets()
+{
+	assetsManager=new FruitNinja.AssetsManager();
+	assetsManager.addEventListener("complete",init);
+	assetsManager.start();
+};
+
+let scene = new THREE.Scene();
+const gravity = -0.02;
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 30;
+
+let canvas_el = document.getElementById("gameCanvas");
+let renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas: canvas_el
+});
+renderer.setClearColor('#e5e5e5');
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
+
+
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2();
+let mymouse = new THREE.Vector2(window.innerWidth/2,window.innerHeight/2);
+
+
+
+/** Mouse effect **/
+function init(){
+    particleSystem = new SPP.ParticleSystem();
+    particleSystem.start();
+    bladeSystem = new SPP.ParticleSystem();
+    bladeSystem.start();
+    
+    
+    topCanvas = document.getElementById("gameCanvasOver");
+    topCanvas.style.display = "block";
+    
+    topCanvas.width = window.innerWidth;
+    topCanvas.height = window.innerHeight;
+    
+    topContext = topCanvas.getContext("2d");
+    topContext.globalCompositeOperation = "lighter";
+    
+    topCanvas.addEventListener('onMouseMove', onMouseMove, false);
+    
+    particleSystem = new SPP.ParticleSystem();
+    particleSystem.start();
+    bladeSystem = new SPP.ParticleSystem();
+    bladeSystem.start();
+    
+}
+
+loadAssets();
+/** **/
+
+
+let score = 0;
+// mesh.position.x = -2;
+
+// scene.add(mesh);
+
+/**Delete this */
+
+/** Test */
+let geometry = new THREE.SphereGeometry( 0.5, 32, 32 );
+let material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+let sphere = new THREE.Mesh( geometry, material );
+scene.add( sphere );
+
+sphere.position.x = -45;
+sphere.position.y = 0;
+
+/** */
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+
+let objects = [];
+
+let initialPositionY = -40;
+
+for (let i = 0; i < 20; ++i) {
+
+    let fruitsPerLevel = Math.floor(Math.random() * (+5 - +1)) + +1;
+    console.log(fruitsPerLevel);
+
+
+    for (let j = 0; j < fruitsPerLevel; ++j) {
+        let geometry = new THREE.SphereGeometry(1, 10, 10);
+        let material = new THREE.MeshLambertMaterial({
+            color: 0xFFCC00
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        let min = -40;
+        let max = 40;
+        let x = Math.floor(Math.random() * (+max - +min)) + +min;
+        mesh.position.x = x;
+        mesh.position.y = initialPositionY;
+        mesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+        mesh.isTouch = false;
+        objects.push(mesh);
+        scene.add(mesh);
+    }
+    initialPositionY -= 250;
+
+
+}
+
+
+
+let light = new THREE.PointLight(0xFFFFFF, 1, 500);
+light.position.set(10, 0, 25);
+scene.add(light);
+
+
+let render = function () {
+    requestAnimationFrame(render);
+    topContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    particleSystem.render();
+    bladeSystem.render();
+    buildColorBlade(bladeColor, bladeWidth);
+
+    objects.forEach(element => {
+        element.position.y += element.voY;
+        if (element.position.y > -30) {
+            element.voY += gravity;
+        }
+    });
+    renderer.render(scene, camera);
+}
+
+function mousemove(e) {
+
+	// Get the mouse position relative to the canvas element.
+	if (e.layerX || e.layerX == 0)
+	{
+		// Firefox
+		mouse.x = e.layerX;
+		mouse.y = e.layerY;
+	} else if (e.offsetX || e.offsetX == 0)
+	{ // Opera
+		mouse.x = e.offsetX;
+		mouse.y = e.offsetY;
+    };
+    
+    console.log("Mouse Must be ", mouse.x, ", ", mouse.y);
+	buildBladeParticle(mouse.x, mouse.y);
+};
+
+
+function onMouseMove(event) {
+
+    event.preventDefault();
+    //console.log("Mouse pos ", event.clientX, " , ",event.clientY );
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    let intersects = raycaster.intersectObjects(scene.children);
+    for (let i = 0; i < intersects.length; ++i) {
+        intersects[i].object.material.color.set(0xFF0000);
+        if (!intersects[i].isTouch) {
+            intersects[i].isTouch = true;
+            console.log(score);
+
+        }
+    }
+    for (let i = 0; i < intersects.length; ++i) {
+        if (intersects[i].isTouch) {
+            score++;
+            intersects[i].isTouch = false;
+        }
+    }
+    document.getElementById('score').innerHTML = score;
+    mousemove(event);
+}
+
+/* Additional Functions */
+
+function convertToRange(value, srcRange, dstRange) {
+    // value is outside source range return
+    if (value < srcRange[0] || value > srcRange[1]) {
+        return NaN;
+    }
+
+    var srcMax = srcRange[1] - srcRange[0],
+        dstMax = dstRange[1] - dstRange[0],
+        adjValue = value - srcRange[0];
+
+    return (adjValue * dstMax / srcMax) + dstRange[0];
+
+}
+
+function moveObject(x,y){
+    mousex =  convertToRange(x,[0,document.body.clientWidth],)
+    mousey =  -(y/ window.innerHeight)*100 * 2 + 1;
+
+    mymouse.set(mousex,mousey);
+    sphere.position.x = mymouse.x;
+    sphere.position.y = mymouse.y;
+    console.log("MOUSE ",mymouse);
+}
+
+/** Hand Move events */
+
+const video = document.getElementById("myvideo");
+const canvas = document.getElementById("canvas");
+const context = canvas.getContext("2d");
+let trackButton = document.getElementById("trackbutton");
+let updateNote = document.getElementById("updatenote");
+
+let imgindex = 1
+let isVideo = false;
+let model = null;
+let videoInterval = 100;
+
+const modelParams = {
+    flipHorizontal: true,   // flip e.g for video  
+    maxNumBoxes: 20,        // maximum number of boxes to detect
+    iouThreshold: 0.5,      // ioU threshold for non-max suppression
+    scoreThreshold: 0.6,    // confidence threshold for predictions.
+}
+
+function startVideo() {
+    handTrack.startVideo(video).then(function (status) {
+        console.log("video started", status);
+        if (status) {
+            updateNote.innerText = "Video started. Now tracking"
+            isVideo = true
+            runDetection()
+        } else {
+            updateNote.innerText = "Please enable video"
+        }
+    });
+}
+
+function toggleVideo() {
+    if (!isVideo) {
+        updateNote.innerText = "Empezando video"
+        startVideo();
+    } else {
+        updateNote.innerText = "Parando video"
+        handTrack.stopVideo(video)
+        isVideo = false;
+        updateNote.innerText = "Video Detenido"
+    }
+}
+
+trackButton.addEventListener("click", function(){
+    toggleVideo();
+});
+
+function runDetection() {
+
+    model.detect(video).then(predictions => {
+        //console.log("Predictions: ", predictions);
+        // get the middle x value of the bounding box and map to paddle location
+        model.renderPredictions(predictions, canvas, context, video);
+        if (predictions[0]) {
+            //console.log(predictions)
+            let midvalx = (predictions[0].bbox[0] + predictions[0].bbox[2]) / 2;
+            let midvaly = (predictions[0].bbox[1] + predictions[0].bbox[3]) / 2;
+            //gamex = document.body.clientWidth * (midvalx / video.width);
+            //gamey = document * (midvaly / video.height);
+            gamex = Math.floor(midvalx * (video.width/document.body.clientWidth));
+            gamey = Math.floor(midvaly * (video.height/document.body.clientHeight));
+            console.log('Predictions Relative  mouse: x ', gamex, " y ", gamey);
+            buildBladeParticle(gamex, gamey);
+            //moveObject(gamex, gamey);
+        }
+        if (isVideo) {
+            setTimeout(() => {
+                runDetection(video)
+            }, videoInterval);
+        }
+    });
+
+}
+
+// Load the model.
+handTrack.load(modelParams).then(lmodel => {
+    model = lmodel
+    updateNote.innerText = "Modelo cargado!"
+    trackButton.disabled = false
+});
+
+
+/**-- */
+render();
+
+window.addEventListener('mousemove', onMouseMove);
+},{"three":2}],2:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -49053,111 +49358,4 @@
 
 }));
 
-},{}],2:[function(require,module,exports){
-const THREE = require('three')
-
-var scene = new THREE.Scene();
-const gravity = -0.02;
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 30;
-var renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setClearColor('#e5e5e5');
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-});
-
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-
-
-var score = 0;
-// mesh.position.x = -2;
-
-// scene.add(mesh);
-
-const sleep = (milliseconds) => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
-
-var objects = [];
-
-var initialPositionY = -40;
-
-for (var i = 0; i < 20; ++i) {
-
-    var fruitsPerLevel = Math.floor(Math.random() * (+5 - +1)) + +1;
-    console.log(fruitsPerLevel);
-
-
-    for (var j = 0; j < fruitsPerLevel; ++j) {
-        var geometry = new THREE.SphereGeometry(1, 10, 10);
-        var material = new THREE.MeshLambertMaterial({ color: 0xFFCC00 });
-        var mesh = new THREE.Mesh(geometry, material);
-        var min = -40;
-        var max = 40;
-        var x = Math.floor(Math.random() * (+max - +min)) + +min;
-        mesh.position.x = x;
-        mesh.position.y = initialPositionY;
-        mesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-        mesh.isTouch = false;
-        objects.push(mesh);
-        scene.add(mesh);
-    }
-    initialPositionY -= 250;
-
-
-}
-
-
-
-var light = new THREE.PointLight(0xFFFFFF, 1, 500);
-light.position.set(10, 0, 25);
-scene.add(light);
-
-
-var render = function () {
-    requestAnimationFrame(render);
-    objects.forEach(element => {
-        element.position.y += element.voY;
-        if (element.position.y > -30) {
-            element.voY += gravity;
-        }
-    });
-    renderer.render(scene, camera);
-}
-
-function onMouseMove(event) {
-
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    var intersects = raycaster.intersectObjects(scene.children);
-    for (var i = 0; i < intersects.length; ++i) {
-        intersects[i].object.material.color.set(0xFF0000);
-        if (!intersects[i].isTouch) {
-            intersects[i].isTouch = true;
-            console.log(score);
-            
-        }
-    }
-    for (var i = 0; i < intersects.length; ++i) {
-        if (intersects[i].isTouch) {
-            score++;
-            intersects[i].isTouch = false;
-        }
-    }
-    document.getElementById('score').innerHTML = score;
-
-}
-
-render();
-
-window.addEventListener('mousemove', onMouseMove);
-
-},{"three":1}]},{},[2]);
+},{}]},{},[1]);

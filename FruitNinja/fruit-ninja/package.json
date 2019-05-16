@@ -9,6 +9,11 @@
     "test": "mocha --recursive"
   },
   "dependencies": {
+    "@babel/preset-env": "^7.4.4",
+    "@babel/preset-es2015": "^7.0.0-beta.53",
+    "browser-resolve": "^1.11.3",
+    "browserify": "^16.2.3",
+    "browsify": "0.0.4",
     "cookie-parser": "^1.4.4",
     "debug": "^4.1.1",
     "express": "^4.16.4",
@@ -16,9 +21,15 @@
     "handtrackjs": "0.0.13",
     "http-errors": "^1.7.2",
     "morgan": "^1.9.1",
-    "pug": "^2.0.3"
+    "pug": "^2.0.3",
+    "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.4.4",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^10.0.0",
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "eslint": "^5.16.0",
@@ -26,6 +37,8 @@
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
+    "esmify": "^2.1.1",
+    "gulp": "^4.0.2",
     "three": "^0.104.0"
   }
 }
