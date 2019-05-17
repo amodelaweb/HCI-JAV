@@ -7,4 +7,3 @@ let topCanvas;
 let topContext;
 let bladeColor;
 let bladeWidth;
-let mouse = {};
