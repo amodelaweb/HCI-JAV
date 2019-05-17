@@ -28,6 +28,8 @@ let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 let mymouse = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
 
+let objectIdentifier = 0;
+
 let addObjectInScene = function () {
 
     let geometry = new THREE.SphereGeometry(1, 10, 10);
@@ -42,6 +44,7 @@ let addObjectInScene = function () {
     mesh.position.y = initialPositionY - (Math.random() * 50);
     mesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
     mesh.isTouch = false;
+    mesh.id = objectIdentifier++;
     objects.push(mesh);
     scene.add(mesh);
 }
@@ -61,6 +64,7 @@ let addBananaInScene = function (object) {
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
             child.isTouch = false;
+            child.id = objectIdentifier++;
             child.geometry.computeVertexNormals();
             // console.log(child);
             objects.push(child);
@@ -84,6 +88,7 @@ let addPearInScene = function (object) {
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
             child.isTouch = false;
+            child.id = objectIdentifier++;
             child.geometry.computeVertexNormals();
             // console.log(child);
             objects.push(child);
@@ -107,6 +112,7 @@ let addStrawberryInScene = function (object) {
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
             child.isTouch = false;
+            child.id = objectIdentifier++;
             child.geometry.computeVertexNormals();
             // console.log(child);
             objects.push(child);
@@ -130,6 +136,7 @@ let addAppleInScene = function (object) {
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
             child.isTouch = false;
+            child.id = objectIdentifier++;
             child.geometry.computeVertexNormals();
             // console.log(child);
             objects.push(child);
@@ -296,10 +303,11 @@ function mousemove(e) {
         mouse.y = e.offsetY;
     };
 
-    console.log("Mouse Must be ", mouse.x, ", ", mouse.y);
+    // console.log("Mouse Must be ", mouse.x, ", ", mouse.y);
     buildBladeParticle(mouse.x, mouse.y);
 };
 
+let cutedItems = new Set();
 
 function onMouseMove(event) {
 
@@ -312,20 +320,11 @@ function onMouseMove(event) {
     raycaster.setFromCamera(mouse, camera);
     let intersects = raycaster.intersectObjects(scene.children);
     for (let i = 0; i < intersects.length; ++i) {
-        intersects[i].object.material.color.set(0xFF0000);
-        if (!intersects[i].isTouch) {
-            intersects[i].isTouch = true;
-            console.log(score);
-
-        }
+        cutedItems.add(intersects[i].object.id);
+        intersects[i].isTouch = true;
     }
-    for (let i = 0; i < intersects.length; ++i) {
-        if (intersects[i].isTouch) {
-            score++;
-            intersects[i].isTouch = false;
-        }
-    }
-    document.getElementById('score').innerHTML = score;
+    
+    document.getElementById('score').innerHTML = cutedItems.size;
     mousemove(event);
 }
 
