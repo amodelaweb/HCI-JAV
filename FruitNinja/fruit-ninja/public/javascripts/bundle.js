@@ -282,6 +282,8 @@ loadAssets();
 
 
 let score = 0;
+
+let lives = 5; // La variable con el numero inicial de vidas
 // mesh.position.x = -2;
 
 // scene.add(mesh);
@@ -393,6 +395,13 @@ function onMouseMove(event) {
             intersects[i].isTouch = true;
             SplatterSound.play();
         }else{
+           //Aqui el jugador golpe una bomba y debe perder una vida
+            lives--;
+            //Si no tiene vidas mostrar un mensaje de alerta y reiniciar el juego refrescando la pagina
+            if(lives == 0){
+              alert("Fin del juego");
+              location.reload();
+            }
             BombSound.play();
         }
     }
