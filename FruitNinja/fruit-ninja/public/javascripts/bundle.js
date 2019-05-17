@@ -2,9 +2,10 @@ function loadAssets() {
     assetsManager = new FruitNinja.AssetsManager();
     assetsManager.addEventListener("complete", init);
     assetsManager.start();
+
 };
 
-var texture = new THREE.TextureLoader().load( "images/bg.jpg" );
+var texture = new THREE.TextureLoader().load("images/bg.jpg");
 let scene = new THREE.Scene();
 scene.background = texture;
 const gravity = -0.02;
@@ -32,129 +33,220 @@ let mymouse = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
 
 let objectIdentifier = 0;
 
-let addObjectInScene = function () {
-
+/* Create Basic Objects */
+function createBasicLemon() {
     let geometry = new THREE.SphereGeometry(1, 10, 10);
     var texture = new THREE.TextureLoader().load('../textures/lemon.jpg');
-    let material = new THREE.MeshLambertMaterial({
-        color: 0xFFCC00
+    let material = new THREE.MeshBasicMaterial({
+        color: 0xFFCC00,
+        map: texture
     });
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.material.map = texture;
+    return mesh;
+}
+
+let manager = new THREE.LoadingManager();
+let loader = new THREE.OBJLoader(manager);
+let mybomb;
+let myBanana;
+let myApple;
+let myPear;
+let mystrawberry;
+
+function createABomb() {
+
+    loader.load('fruits/Bomb.obj', function (object) {
+        let texture = new THREE.TextureLoader().load('../textures/Albedo.png');
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                // console.log("MESH")
+                child.scale.set(10, 10, 10);
+                child.material = new THREE.MeshBasicMaterial();
+                child.material.map = texture;
+                child.isTouch = false;
+                child.geometry.computeVertexNormals();
+                child.name = "bomb";
+                mybomb = child;
+            }
+        });
+    });
+}
+
+
+function createAnApple() {
+
+    loader.load('fruits/apple.obj', function (object) {
+        let texture = new THREE.TextureLoader().load('../textures/apple.jpg');
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.scale.set(0.03, 0.03, 0.03);
+                child.material = new THREE.MeshBasicMaterial();
+                child.material.color = new THREE.Color(0XFFE135);
+                child.material.map = texture;
+                child.isTouch = false;
+                child.geometry.computeVertexNormals();
+                myApple = child;
+            }
+        });
+    });
+}
+
+function createBanana() {
+
+    loader.load('fruits/banana2.obj', function (object) {
+        let texture = new THREE.TextureLoader().load('../textures/banana.jpg');
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.scale.set(0.05, 0.05, 0.05);
+                child.material = new THREE.MeshBasicMaterial();
+                child.material.color = new THREE.Color(0XFFE135);
+                child.material.map = texture;
+                child.isTouch = false;
+                child.geometry.computeVertexNormals();
+                myBanana = child;
+            }
+        });
+    });
+}
+
+function createStrawberry() {
+
+    loader.load('fruits/strawberry.obj', function (object) {
+        let texture = new THREE.TextureLoader().load('../textures/strawberry.jpg');
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.scale.set(1.0, 1.0, 1.0);
+                child.material = new THREE.MeshBasicMaterial();
+                child.material.color = new THREE.Color(0XFFE135);
+                child.material.map = texture;
+                child.isTouch = false;
+                child.geometry.computeVertexNormals();
+                mystrawberry = child;
+            }
+        });
+    });
+}
+
+function createPear() {
+
+    loader.load('fruits/Pear2.obj', function (object) {
+        let texture = new THREE.TextureLoader().load('../textures/Pear.jpg');
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.scale.set(0.5, 0.5, 0.5);
+                child.material = new THREE.MeshBasicMaterial();
+                child.material.color = new THREE.Color(0XFFE135);
+                child.material.map = texture;
+                child.isTouch = false;
+                child.geometry.computeVertexNormals();
+                myPear = child;
+            }
+        });
+    });
+}
+let lemon = createBasicLemon();
+
+
+/** */
+
+let addObjectInScene = function () {
+
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-    mesh.position.x = x;
-    mesh.position.y = initialPositionY - (Math.random() * 50);
-    mesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-    mesh.isTouch = false;
-    mesh.id = objectIdentifier++;
-    objects.push(mesh);
-    scene.add(mesh);
+    let mymesh = lemon.clone();
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.isTouch = false;
+    mymesh.id = objectIdentifier++;
+    objects.push(mymesh);
+    scene.add(mymesh);
 }
 /** Multiple fruits */
-let addBananaInScene = function (object) {
+
+let addBombInScene = function () {
     //Move the banana in the scene
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-    var texture = new THREE.TextureLoader().load('../textures/banana.jpg');
-    //Go through all children of the loaded object and search for a Mesh
-    object.traverse(function (child) {
-        if (child instanceof THREE.Mesh) {
-            // console.log("MESH")
-            child.scale.set(0.05, 0.05, 0.05);
-            child.material.color = new THREE.Color(0XFFE135);
-            child.material.map = texture;
-            child.position.x = x;
-            child.position.y = initialPositionY - (Math.random() * 50);
-            child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-            child.isTouch = false;
-            child.id = objectIdentifier++;
-            child.geometry.computeVertexNormals();
-            // console.log(child);
-            objects.push(child);
-            scene.add(child);
-        }
-    });
+
+    let mymesh = mybomb.clone();
+
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.id = objectIdentifier++;
+    mymesh.rotation.z += 100;
+    objects.push(mymesh);
+    scene.add(mymesh);
+};
+
+
+
+let addBananaInScene = function (object) {
+    let min = -40;
+    let max = 40;
+    let x = Math.floor(Math.random() * (+max - +min)) + +min;
+
+    let mymesh = myBanana.clone();
+
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.id = objectIdentifier++;
+    objects.push(mymesh);
+    scene.add(mymesh);
 };
 
 let addPearInScene = function (object) {
-    //Move the banana in the scene
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-        var texture = new THREE.TextureLoader().load('../textures/Pear.jpg');
-    //Go through all children of the loaded object and search for a Mesh
-    object.traverse(function (child) {
-        if (child instanceof THREE.Mesh) {
-            // console.log("MESH")
-            child.scale.set(0.5, 0.5, 0.5);
-            //child.material.color = new THREE.Color(0X00FF00);
-            child.material.map = texture;
-            child.position.x = x;
-            child.position.y = initialPositionY - (Math.random() * 50);
-            child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-            child.isTouch = false;
-            child.id = objectIdentifier++;
-            child.geometry.computeVertexNormals();
-            // console.log(child);
-            objects.push(child);
-            scene.add(child);
-        }
-    });
+
+    let mymesh = myPear.clone();
+
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.id = objectIdentifier++;
+    objects.push(mymesh);
+    scene.add(mymesh);
 };
 
 let addStrawberryInScene = function (object) {
-    //Move the banana in the scene
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-      var texture = new THREE.TextureLoader().load('../textures/strawberry.jpg');
-    //Go through all children of the loaded object and search for a Mesh
-    object.traverse(function (child) {
-        if (child instanceof THREE.Mesh) {
-            // console.log("MESH")
-            child.scale.set(1.0, 1.0, 1.0);
-            //child.material.color = new THREE.Color(0XFC5A8D);
-            child.material.map = texture;
-            child.position.x = x;
-            child.position.y = initialPositionY - (Math.random() * 50);
-            child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-            child.isTouch = false;
-            child.id = objectIdentifier++;
-            child.geometry.computeVertexNormals();
-            // console.log(child);
-            objects.push(child);
-            scene.add(child);
-        }
-    });
+
+    let mymesh = mystrawberry.clone();
+
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.id = objectIdentifier++;
+    objects.push(mymesh);
+    scene.add(mymesh);
 };
 
 let addAppleInScene = function (object) {
-    //Move the banana in the scene
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-    var texture = new THREE.TextureLoader().load('../textures/apple.jpg');
-    object.traverse(function (child) {
-        if (child instanceof THREE.Mesh) {
-          //Go through all children of the loaded object and search for a Mesh
-            // console.log("MESH")
-            child.scale.set(0.03, 0.03, 0.03);
-            //child.material.color = new THREE.Color(0X00FF00);
-            child.material.map = texture;
-            child.position.x = x;
-            child.position.y = initialPositionY - (Math.random() * 50);
-            child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-            child.isTouch = false;
-            child.id = objectIdentifier++;
-            child.geometry.computeVertexNormals();
-            // console.log(child);
-            objects.push(child);
-            scene.add(child);
-        }
-    });
+
+    let mymesh = myApple.clone();
+
+    mymesh.position.x = x;
+    mymesh.position.y = initialPositionY - (Math.random() * 50);
+    mymesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
+    mymesh.id = objectIdentifier++;
+    objects.push(mymesh);
+    scene.add(mymesh);
 };
 
 
@@ -217,66 +309,27 @@ const sleep = (milliseconds) => {
 let objects = [];
 
 let initialPositionY = -40;
-/*
-for (let i = 0; i < 20; ++i) {
 
-    let fruitsPerLevel = Math.floor(Math.random() * (+5 - +1)) + +1;
-    console.log(fruitsPerLevel);
-
-
-    for (let j = 0; j < fruitsPerLevel; ++j) {
-        let geometry = new THREE.SphereGeometry(1, 10, 10);
-        let material = new THREE.MeshLambertMaterial({
-            color: 0xFFCC00
-        });
-        let mesh = new THREE.Mesh(geometry, material);
-        let min = -40;
-        let max = 40;
-        let x = Math.floor(Math.random() * (+max - +min)) + +min;
-        mesh.position.x = x;
-        mesh.position.y = initialPositionY;
-        mesh.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
-        mesh.isTouch = false;
-        objects.push(mesh);
-        scene.add(mesh);
-    }
-    initialPositionY -= 250;
-
-
-}
-*/
 /**Fruits */
 
 
 let j = 0;
 
 setInterval(function () {
-    //console.log("intervalo");
-    //console.log(j);
-    //console.log("**");
-    //for (let j = 0; j < 4; ++j) {
-
-    //Manager from ThreeJs to track a loader and its status
-    let manager = new THREE.LoadingManager();
-    //Loader for Obj from Three.js
-    let loader = new THREE.OBJLoader(manager);
-    j = Math.floor(Math.random()*(5-1+1)+1);
-
-    if (j == 1){
+    j = Math.floor(Math.random() * (6 - 1 + 1) + 1);
+    if (j == 1) {
         addObjectInScene();
-    }else if(j == 2){
-        loader.load('fruits/banana2.obj', addBananaInScene);
-    }else if (j == 3){
-        loader.load('fruits/Pear2.obj', addPearInScene);
-    }else if(j == 4){
-        loader.load('fruits/strawberry.obj', addStrawberryInScene);
-    }else{
-        loader.load('fruits/apple.obj', addAppleInScene);
+    } else if (j == 2) {
+        addBananaInScene();
+    } else if (j == 3) {
+        addPearInScene();
+    } else if (j == 4) {
+        addStrawberryInScene();
+    } else if (j == 5) {
+        addAppleInScene();
+    } else {
+        addBombInScene();
     }
-
-    //console.log(j);
-    //  }
-
 }, 1500);
 
 
@@ -288,20 +341,21 @@ scene.add(light);
 
 let render = function () {
     requestAnimationFrame(render);
-    topContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-    particleSystem.render();
-    bladeSystem.render();
-    buildColorBlade(bladeColor, bladeWidth);
 
     objects.forEach(element => {
         element.position.y += element.voY;
-        element.rotation.z += 0.01 ;    
-        element.rotation.x -= 0.01 ; 
+        element.rotation.z += 0.01;
+        element.rotation.x -= 0.01;
         if (element.position.y > -30) {
             element.voY += gravity;
         }
     });
+
+    topContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    particleSystem.render();
+    bladeSystem.render();
+    buildColorBlade(bladeColor, bladeWidth);
+
     renderer.render(scene, camera);
 }
 
@@ -334,10 +388,14 @@ function onMouseMove(event) {
     raycaster.setFromCamera(mouse, camera);
     let intersects = raycaster.intersectObjects(scene.children);
     for (let i = 0; i < intersects.length; ++i) {
-        cutedItems.add(intersects[i].object.id);
-        intersects[i].isTouch = true;
+        if (intersects[i].object.name != "bomb") {
+            cutedItems.add(intersects[i].object.id);
+            intersects[i].isTouch = true;
+            SplatterSound.play();
+        }else{
+            BombSound.play();
+        }
     }
-    
     document.getElementById('score').innerHTML = cutedItems.size;
     mousemove(event);
 }
@@ -451,6 +509,11 @@ handTrack.load(modelParams).then(lmodel => {
     trackButton.disabled = false
 });
 
+createABomb();
+createAnApple();
+createBanana();
+createStrawberry();
+createPear();
 
 /**-- */
 render();
