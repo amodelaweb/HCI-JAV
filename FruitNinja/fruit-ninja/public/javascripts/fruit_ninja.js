@@ -7,3 +7,8 @@ let topCanvas;
 let topContext;
 let bladeColor;
 let bladeWidth;
+
+/* Sounds */
+let CutSound;
+let BombSound;
+let SplatterSound;

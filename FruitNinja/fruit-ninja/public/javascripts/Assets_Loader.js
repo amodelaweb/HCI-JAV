@@ -16,3 +16,16 @@ FruitNinja.AssetsManager = function()
 	};
 
 };
+
+CutSound = new Howl ({
+	src: ['sounds/throw-fruit.ogg','sounds/throw-fruit.mp3'],
+	  volume: 0.5
+});
+BombSound = new Howl ({
+	src: ['sounds/bomb-explode.ogg','sounds/bomb-explode.mp3'],
+	  volume: 0.5
+});
+SplatterSound = new Howl ({
+	src: ['sounds/splatter.ogg','sounds/splatter.mp3'],
+	  volume: 0.5
+});
