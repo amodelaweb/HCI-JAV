@@ -31,10 +31,12 @@ let mymouse = new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2);
 let addObjectInScene = function () {
 
     let geometry = new THREE.SphereGeometry(1, 10, 10);
+    var texture = new THREE.TextureLoader().load('../textures/lemon.jpg');
     let material = new THREE.MeshLambertMaterial({
         color: 0xFFCC00
     });
     let mesh = new THREE.Mesh(geometry, material);
+    mesh.material.map = texture;
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
@@ -51,12 +53,14 @@ let addBananaInScene = function (object) {
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
+    var texture = new THREE.TextureLoader().load('../textures/banana.jpg');
     //Go through all children of the loaded object and search for a Mesh
     object.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
             // console.log("MESH")
             child.scale.set(0.05, 0.05, 0.05);
-            child.material.color = new THREE.Color(0X00FF00);
+            child.material.color = new THREE.Color(0XFFE135);
+            child.material.map = texture;
             child.position.x = x;
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
@@ -74,12 +78,14 @@ let addPearInScene = function (object) {
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
+        var texture = new THREE.TextureLoader().load('../textures/Pear.jpg');
     //Go through all children of the loaded object and search for a Mesh
     object.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
             // console.log("MESH")
             child.scale.set(0.5, 0.5, 0.5);
-            child.material.color = new THREE.Color(0X00FF00);
+            //child.material.color = new THREE.Color(0X00FF00);
+            child.material.map = texture;
             child.position.x = x;
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
@@ -97,12 +103,14 @@ let addStrawberryInScene = function (object) {
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
+      var texture = new THREE.TextureLoader().load('../textures/strawberry.jpg');
     //Go through all children of the loaded object and search for a Mesh
     object.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
             // console.log("MESH")
             child.scale.set(1.0, 1.0, 1.0);
-            child.material.color = new THREE.Color(0X00FF00);
+            //child.material.color = new THREE.Color(0XFC5A8D);
+            child.material.map = texture;
             child.position.x = x;
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
@@ -120,12 +128,14 @@ let addAppleInScene = function (object) {
     let min = -40;
     let max = 40;
     let x = Math.floor(Math.random() * (+max - +min)) + +min;
-    //Go through all children of the loaded object and search for a Mesh
+    var texture = new THREE.TextureLoader().load('../textures/apple.jpg');
     object.traverse(function (child) {
         if (child instanceof THREE.Mesh) {
+          //Go through all children of the loaded object and search for a Mesh
             // console.log("MESH")
             child.scale.set(0.03, 0.03, 0.03);
-            child.material.color = new THREE.Color(0X00FF00);
+            //child.material.color = new THREE.Color(0X00FF00);
+            child.material.map = texture;
             child.position.x = x;
             child.position.y = initialPositionY - (Math.random() * 50);
             child.voY = (Math.random() * (+1.4 - +1.0)) + 1.0;
@@ -369,7 +379,7 @@ let model = null;
 let videoInterval = 100;
 
 const modelParams = {
-    flipHorizontal: true, // flip e.g for video  
+    flipHorizontal: true, // flip e.g for video
     maxNumBoxes: 20, // maximum number of boxes to detect
     iouThreshold: 0.5, // ioU threshold for non-max suppression
     scoreThreshold: 0.6, // confidence threshold for predictions.
