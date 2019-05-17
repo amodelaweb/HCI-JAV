@@ -29,6 +29,7 @@
         buildBlade(width * 0.6);
     };
     buildBladeParticle = function (x, y) {
+        console.log(x, " ", y);
         let p = bladeSystem.createParticle(SPP.Particle);
         p.init(x, y, 0.2);
     };

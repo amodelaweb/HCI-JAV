@@ -5,12 +5,17 @@ function loadAssets() {
 
 };
 
-var texture = new THREE.TextureLoader().load("images/bg.jpg");
+let texture = new THREE.TextureLoader().load("images/bg.jpg");
 let scene = new THREE.Scene();
 scene.background = texture;
 const gravity = -0.02;
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 30;
+
+let lastPointCamera = {
+    x: null,
+    y: null
+};
 
 let canvas_el = document.getElementById("gameCanvas");
 let renderer = new THREE.WebGLRenderer({
@@ -36,7 +41,7 @@ let objectIdentifier = 0;
 /* Create Basic Objects */
 function createBasicLemon() {
     let geometry = new THREE.SphereGeometry(1, 10, 10);
-    var texture = new THREE.TextureLoader().load('../textures/lemon.jpg');
+    let texture = new THREE.TextureLoader().load('../textures/lemon.jpg');
     let material = new THREE.MeshBasicMaterial({
         color: 0xFFCC00,
         map: texture
@@ -52,7 +57,40 @@ let myBanana;
 let myApple;
 let myPear;
 let mystrawberry;
+/**
+ * Funciones para hallas la pendiente 
+ */
 
+function slope(a, b) {
+    if (a.x == b.x) {
+        return null;
+    }
+    return (b.y - a.y) / (b.x - a.x);
+}
+
+function intercept(point, slope) {
+    if (slope === null) {
+        return point.x;
+    }
+    return point.y - slope * point.x;
+}
+
+function draw_Line(pointa, pointb){
+    if (pointa.x > pointb.x){
+        let temp = pointa;
+        pointa = pointb;
+        pointb = temp;
+    }
+    let m = slope(pointa, pointb);
+    let b = intercept(pointa, m);
+    
+    for (let x = pointa.x; x <= pointb.x; x+= 200) {
+        let y = m * x + b;
+        buildBladeParticle(x,y);
+    }
+}
+/*
+ */
 function createABomb() {
 
     loader.load('fruits/Bomb.obj', function (object) {
@@ -310,6 +348,94 @@ let objects = [];
 
 let initialPositionY = -40;
 
+
+/**
+ *  Explotions
+ * 
+ */
+function createCanvasMaterial(color, size) {
+    let matCanvas = document.createElement('canvas');
+    matCanvas.width = matCanvas.height = size;
+    let matContext = matCanvas.getContext('2d');
+    // create exture object from canvas.
+    let texture = new THREE.Texture(matCanvas);
+    // Draw a circle
+    let center = size / 2;
+    matContext.beginPath();
+    matContext.arc(center, center, size / 2, 0, 2 * Math.PI, false);
+    matContext.closePath();
+    matContext.fillStyle = color;
+    matContext.fill();
+    // need to set needsUpdate
+    texture.needsUpdate = true;
+    // return a texture made from the canvas
+    return texture;
+}
+
+//////////////settings/////////
+let movementSpeed = 80;
+let totalObjects = 500;
+let objectSize = 3;
+let sizeRandomness = 4000;
+
+/////////////////////////////////
+let dirs = [];
+let parts = [];
+
+function ExplodeAnimation(x, y, color) {
+    let geometry = new THREE.Geometry();
+
+    for (i = 0; i < totalObjects; i++) {
+        let vertex = new THREE.Vector3();
+        vertex.x = x;
+        vertex.y = y;
+        vertex.z = 0;
+
+        geometry.vertices.push(vertex);
+        dirs.push({
+            x: (Math.random() * movementSpeed) - (movementSpeed / 2),
+            y: (Math.random() * movementSpeed) - (movementSpeed / 2),
+            z: (Math.random() * movementSpeed) - (movementSpeed / 2)
+        });
+    }
+    let material = new THREE.PointsMaterial({
+        size: objectSize,
+        map: createCanvasMaterial(color, 256),
+        transparent: true,
+        depthWrite: false
+    });
+    let particles = new THREE.Points(geometry, material);
+
+    this.object = particles;
+    this.status = true;
+
+    this.xDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+    this.yDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+    this.zDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+
+    scene.add(this.object);
+
+    this.update = function () {
+        if (this.status == true) {
+            let pCount = totalObjects;
+            while (pCount--) {
+                let particle = this.object.geometry.vertices[pCount]
+                particle.y += dirs[pCount].y;
+                particle.x += dirs[pCount].x;
+                particle.z += dirs[pCount].z;
+            }
+            this.object.geometry.verticesNeedUpdate = true;
+        }
+    }
+
+}
+
+
+
+/**
+ * 
+ * 
+ */
 /**Fruits */
 
 
@@ -351,10 +477,16 @@ let render = function () {
         }
     });
 
-    topContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
     particleSystem.render();
     bladeSystem.render();
     buildColorBlade(bladeColor, bladeWidth);
+
+
+    let pCount = parts.length;
+    while (pCount--) {
+        parts[pCount].update();
+    }
+
 
     renderer.render(scene, camera);
 }
@@ -377,6 +509,30 @@ function mousemove(e) {
 
 let cutedItems = new Set();
 
+function cutFruit(){
+    raycaster.setFromCamera(mouse, camera);
+    let intersects = raycaster.intersectObjects(scene.children);
+    for (let i = 0; i < intersects.length; ++i) {
+        let myobj = intersects[i].object;
+        if (myobj.name != "bomb") {
+            cutedItems.add(myobj.id);
+            intersects[i].isTouch = true;
+            SplatterSound.play();
+            sleep(200);
+            parts.push(new ExplodeAnimation(myobj.position.x, myobj.position.y, colors[Math.round(Math.random() * colors.length)]));
+        } else {
+            BombSound.play();
+            sleep(200);
+            parts.push(new ExplodeAnimation(myobj.position.x, myobj.position.y, "#000000"));
+        }
+        scene.remove(myobj);
+        myobj.geometry.dispose();
+        myobj.material.dispose();
+        myobj = undefined;
+    }
+    document.getElementById('score').innerHTML = cutedItems.size;
+}
+
 function onMouseMove(event) {
 
     event.preventDefault();
@@ -385,18 +541,7 @@ function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    raycaster.setFromCamera(mouse, camera);
-    let intersects = raycaster.intersectObjects(scene.children);
-    for (let i = 0; i < intersects.length; ++i) {
-        if (intersects[i].object.name != "bomb") {
-            cutedItems.add(intersects[i].object.id);
-            intersects[i].isTouch = true;
-            SplatterSound.play();
-        }else{
-            BombSound.play();
-        }
-    }
-    document.getElementById('score').innerHTML = cutedItems.size;
+    cutFruit();
     mousemove(event);
 }
 
@@ -423,7 +568,7 @@ function moveObject(x, y) {
     mymouse.set(mousex, mousey);
     sphere.position.x = mymouse.x;
     sphere.position.y = mymouse.y;
-    console.log("MOUSE ", mymouse);
+//    console.log("MOUSE ", mymouse);
 }
 
 /** Hand Move events */
@@ -473,7 +618,15 @@ function toggleVideo() {
 
 trackButton.addEventListener("click", function () {
     toggleVideo();
+    /*
+    for (let i = 0; i < 1000; i += 500) {
+        buildBladeParticle(i, i);
+    }
+    */
+    //buildBladeParticle(500, 500);
 });
+
+
 
 function runDetection() {
 
@@ -482,15 +635,29 @@ function runDetection() {
         // get the middle x value of the bounding box and map to paddle location
         model.renderPredictions(predictions, canvas, context, video);
         if (predictions[0]) {
+            topContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
             //console.log(predictions)
-            let midvalx = (predictions[0].bbox[0] + predictions[0].bbox[2]) / 2;
-            let midvaly = (predictions[0].bbox[1] + predictions[0].bbox[3]) / 2;
+            let midvalx = predictions[0].bbox[0] + (predictions[0].bbox[2] / 2);
+            let midvaly = predictions[0].bbox[1] + (predictions[0].bbox[3] / 2);
+            //console.log("Mid x ", midvalx, "midY", midvaly)
             //gamex = document.body.clientWidth * (midvalx / video.width);
             //gamey = document * (midvaly / video.height);
-            gamex = Math.floor(midvalx * (video.width / document.body.clientWidth));
-            gamey = Math.floor(midvaly * (video.height / document.body.clientHeight));
-            console.log('Predictions Relative  mouse: x ', gamex, " y ", gamey);
-            buildBladeParticle(gamex, gamey);
+            //console.log("W; ", video.width, "H: ", video.height, "DW", window.innerWidth, "DH : ", window.innerHeight)
+            gamex = Math.floor(midvalx * (window.innerWidth / video.width));
+            gamey = Math.floor(midvaly * (window.innerHeight / video.height));
+            //console.log('Predictions Relative  mouse: x ', gamex, " |y ", gamey);
+            //topContext.fillRect(gamex,gamey,10,10);
+            if (lastPointCamera.x != null) {
+                buildBladeParticle(lastPointCamera.x, lastPointCamera.y);
+                draw_Line(lastPointCamera, {x: gamex,y:gamey});
+                buildBladeParticle(gamex, gamey);
+            }
+            mouse.x = gamex;
+            mouse.y = gamey;
+            cutFruit();
+            lastPointCamera.x = gamex;
+            lastPointCamera.y = gamey;
+
             //moveObject(gamex, gamey);
         }
         if (isVideo) {
