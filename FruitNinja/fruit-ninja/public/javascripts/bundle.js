@@ -4,7 +4,9 @@ function loadAssets() {
     assetsManager.start();
 };
 
+var texture = new THREE.TextureLoader().load( "images/bg.jpg" );
 let scene = new THREE.Scene();
+scene.background = texture;
 const gravity = -0.02;
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 30;
@@ -277,6 +279,8 @@ let render = function () {
 
     objects.forEach(element => {
         element.position.y += element.voY;
+        element.rotation.z += 0.01 ;    
+        element.rotation.x -= 0.01 ; 
         if (element.position.y > -30) {
             element.voY += gravity;
         }
